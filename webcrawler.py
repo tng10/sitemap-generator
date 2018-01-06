@@ -2,6 +2,7 @@
 
 import urllib2
 from urlparse import urlparse
+from HTMLParser import HTMLParser
 
 
 class URLParser(object):
@@ -101,7 +102,7 @@ class WebCrawler(object):
             # recursion call (making sure max_depth gets decremented)
             self.perform_crawling(new_urls_set, max_depth-1)
 
-    def get_links_from_response(response):
+    def get_links_from_response(self, response):
         """
         Extract links from the response using a parser
         https://docs.python.org/2/library/htmlparser.html#HTMLParser.HTMLParser.feed
@@ -131,8 +132,13 @@ class WebCrawler(object):
         HTTP Request using urllib2
         """
         try:
+            # Check url contains the domain already
+            if not self.domain in url:
+                complete_url = "%s://%s%s" % (self.prefix, self.domain, url)
+            else:
+                complete_url = url
             # This packages the request (it doesn't make it)
-            request = urllib2.Request(url)
+            request = urllib2.Request(complete_url)
             # Sends the request and catches the response
             response = urllib2.urlopen(request)
             return response.read().decode('utf-8', 'ignore')
