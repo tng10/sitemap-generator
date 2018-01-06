@@ -111,19 +111,30 @@ class WebCrawler(object):
         anchor_parser.feed(response)
         links = set()
         for link in anchor_parser.get_links():
-            links.add(link)
+            is_valid = self.is_this_link_valid(link)
+            if is_valid:
+                links.add(link)
         return links
+
+    def is_this_link_valid(self, link):
+        if not isinstance(link, (str, unicode)):
+            return False
+        if link.startswith('/') or link.startswith(self.domain) or link.startswith('http' + self.domain):
+            return True
+        return False
 
     def set(self, current_url, response):
         """
         SET URL information
         """
+        print 'Setting URL:' + current_url
         self.website_content[current_url] = response
 
     def get(self, current_url):
         """
         Get URL via HTTP
         """
+        print 'Fetching URL:' + current_url
         response = self.http_get_request(current_url)
         return response
 
