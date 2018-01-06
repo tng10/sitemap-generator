@@ -64,9 +64,9 @@ class WebCrawler(object):
             gen = (url for url in urls_set if url not in self.website_content)
             for url in gen:
                 # get response from url
-                response = self.get(url)
+                response, lastmod = self.get(url)
                 # set url info
-                self.set(url, response)
+                self.set(url, response, lastmod)
                 # get all links inside the response
                 links_from_response = self.get_links_from_response(response)
                 # put new_urls_set and links_from_response together
@@ -95,20 +95,20 @@ class WebCrawler(object):
             return True
         return False
 
-    def set(self, current_url, response):
+    def set(self, current_url, response, lastmod):
         """
         SET URL information
         """
         # print 'Setting URL: ' + current_url
-        self.website_content[current_url] = response
+        self.website_content[current_url] = {'response': response, 'lastmod': lastmod}
 
     def get(self, current_url):
         """
         Get URL via HTTP
         """
         print 'Fetching URL: ' + current_url
-        response = self.http_get_request(current_url)
-        return response
+        response_raw, lastmod = self.http_get_request(current_url)
+        return (response_raw, lastmod)
 
     def http_get_request(self, url):
         """
@@ -124,10 +124,14 @@ class WebCrawler(object):
             request = urllib2.Request(complete_url)
             # Sends the request and catches the response
             response = urllib2.urlopen(request)
-            return response.read().decode('utf-8', 'ignore')
+            response_raw = response.read().decode('utf-8', 'ignore')
+            lastmod = response.headers.dict.get('last-modified') or response.headers.dict.get('date')
         except (urllib2.HTTPError, urllib2.URLError, ssl.CertificateError, ValueError), exc:
             print 'Something went wrong for this URL: [%s] - %s' % (url, exc)
-            return str()
+            response_raw = str()
+            lastmod = None
+
+        return (response_raw, lastmod)
 
     def test_http_get_request(self, url):
         """

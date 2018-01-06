@@ -37,7 +37,7 @@ class SiteMapXML(object):
         root_elem.append(comment)
 
         # generate children
-        for path in self.website_content.keys():
+        for path, obj in self.website_content.items():
             # url (element)
             url = self.build_url(self.prefix, self.domain, path)
             url_elem = ET.SubElement(root_elem, self.url_metadata['name'])
@@ -48,7 +48,7 @@ class SiteMapXML(object):
 
             # lastmod (datetime)
             url_child_elem = ET.SubElement(url_elem, 'lastmod')
-            url_child_elem.text = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            url_child_elem.text = obj.get('lastmod')
 
         # output it as well
         output = self.prettify(root_elem)
