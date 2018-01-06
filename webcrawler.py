@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import urllib2
 from parsers import AnchorHTMLParser, URLParser
+from sitemap import SiteMapXML
 
 
 class WebCrawler(object):
@@ -54,6 +55,9 @@ class WebCrawler(object):
                 new_urls_set = new_urls_set.union(links_from_response)
             # recursion call (making sure max_depth gets decremented)
             self.perform_crawling(new_urls_set, max_depth-1)
+
+        sitemap_xml = SiteMapXML(self.website_content, self.prefix, self.domain)
+        sitemap_xml.generate()
 
     def get_links_from_response(self, response):
         """
