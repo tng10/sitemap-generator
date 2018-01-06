@@ -59,3 +59,24 @@ class WebCrawler(object):
 
     def perform_crawling(self, urls_set, max_depth):
         pass
+
+    def get(self, current_url):
+        """
+        Get URL via HTTP
+        """
+        response = self.http_get_request(current_url)
+        return response
+
+    def http_get_request(self, url):
+        """
+        HTTP Request using urllib2
+        """
+        try:
+            # This packages the request (it doesn't make it)
+            request = urllib2.Request(url)
+            # Sends the request and catches the response
+            response = urllib2.urlopen(request)
+            return response.read().decode('utf-8', 'ignore')
+        except (urllib2.HTTPError, urllib2.URLError), exc:
+            print 'Something went wrong for this URL: [%s] - %s' % (url, exc)
+            return str()
