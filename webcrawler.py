@@ -25,13 +25,30 @@ class WebCrawler(object):
         self.prefix = self.parsed_url.get_prefix()
         self.root_path = self.parsed_url.get_path()
 
+    def is_argument_valid(self):
+        """
+        Verify valid URL
+        """
+        parsed_url = URLParser(self.url)
+        test_request, error = self.test_http_get_request(self.url)
+        if not parsed_url.get_domain() or not test_request:
+            print error
+            return False
+        return True
+
     def crawl_it(self):
         """
         Set URL metadata
         Initialize crawling execution
+        Generate XML
         """
+        if not self.is_argument_valid():
+            raise Exception('%s is not a valid URL' % self.url)
         self.get_url_info()
         self.perform_crawling([self.root_path], self.max_depth)
+
+        sitemap_xml = SiteMapXML(self.website_content, self.prefix, self.domain)
+        sitemap_xml.generate()
 
     def perform_crawling(self, urls_set, max_depth):
         """
@@ -56,9 +73,6 @@ class WebCrawler(object):
                 new_urls_set = new_urls_set.union(links_from_response)
             # recursion call (making sure max_depth gets decremented)
             self.perform_crawling(new_urls_set, max_depth-1)
-
-        sitemap_xml = SiteMapXML(self.website_content, self.prefix, self.domain)
-        sitemap_xml.generate()
 
     def get_links_from_response(self, response):
         """
@@ -85,14 +99,14 @@ class WebCrawler(object):
         """
         SET URL information
         """
-        print 'Setting URL:' + current_url
+        # print 'Setting URL: ' + current_url
         self.website_content[current_url] = response
 
     def get(self, current_url):
         """
         Get URL via HTTP
         """
-        print 'Fetching URL:' + current_url
+        print 'Fetching URL: ' + current_url
         response = self.http_get_request(current_url)
         return response
 
@@ -111,6 +125,19 @@ class WebCrawler(object):
             # Sends the request and catches the response
             response = urllib2.urlopen(request)
             return response.read().decode('utf-8', 'ignore')
-        except (urllib2.HTTPError, urllib2.URLError, ssl.CertificateError), exc:
+        except (urllib2.HTTPError, urllib2.URLError, ssl.CertificateError, ValueError), exc:
             print 'Something went wrong for this URL: [%s] - %s' % (url, exc)
             return str()
+
+    def test_http_get_request(self, url):
+        """
+        Test HTTP Request using urllib2 (given url)
+        """
+        try:
+            # This packages the request (it doesn't make it)
+            request = urllib2.Request(url)
+            # Sends the request and catches the response
+            response = urllib2.urlopen(request)
+        except Exception as e:
+            return (False, e)
+        return (True, None)
