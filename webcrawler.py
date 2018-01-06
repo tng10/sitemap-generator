@@ -60,6 +60,12 @@ class WebCrawler(object):
     def perform_crawling(self, urls_set, max_depth):
         pass
 
+    def set(self, current_url, response):
+        """
+        SET URL information
+        """
+        self.website_content[current_url] = response
+
     def get(self, current_url):
         """
         Get URL via HTTP
