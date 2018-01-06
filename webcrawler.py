@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import ssl
 import urllib2
 from parsers import AnchorHTMLParser, URLParser
 from sitemap import SiteMapXML
@@ -110,6 +111,6 @@ class WebCrawler(object):
             # Sends the request and catches the response
             response = urllib2.urlopen(request)
             return response.read().decode('utf-8', 'ignore')
-        except (urllib2.HTTPError, urllib2.URLError), exc:
+        except (urllib2.HTTPError, urllib2.URLError, ssl.CertificateError), exc:
             print 'Something went wrong for this URL: [%s] - %s' % (url, exc)
             return str()
