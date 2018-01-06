@@ -29,6 +29,26 @@ class URLParser(object):
         return self.parsed_url.path
 
 
+class AnchorHTMLParser(HTMLParser):
+    """
+    Responsible for parsing anchor tags (<a>) and grab its attributes
+    On this particular case we are interested on href attribute
+    https://docs.python.org/2/library/htmlparser.html#HTMLParser.HTMLParser.handle_starttag
+    """
+
+    tag = {'name': 'a', 'attribute': 'href'}
+    links = set()
+
+    def handle_starttag(self, tag, attrs):
+        if tag == self.tag['name']:
+            link = dict(attrs).get(self.tag.get('attribute'))
+            if link:
+                self.links.add(link)
+
+    def get_links(self):
+        return self.links
+
+
 class WebCrawler(object):
     """
     URL of the website
@@ -82,7 +102,16 @@ class WebCrawler(object):
             self.perform_crawling(new_urls_set, max_depth-1)
 
     def get_links_from_response(response):
-        pass
+        """
+        Extract links from the response using a parser
+        https://docs.python.org/2/library/htmlparser.html#HTMLParser.HTMLParser.feed
+        """
+        anchor_parser = AnchorHTMLParser()
+        anchor_parser.feed(response)
+        links = set()
+        for link in anchor_parser.get_links():
+            links.add(link)
+        return links
 
     def set(self, current_url, response):
         """
