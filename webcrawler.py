@@ -58,6 +58,30 @@ class WebCrawler(object):
         self.perform_crawling([self.root_path], self.max_depth)
 
     def perform_crawling(self, urls_set, max_depth):
+        """
+        Navigate through urls (GET info, SET info, search for links, add new links)
+        Respect some constraints (visited page, max depth recursion)
+        """
+        # create a set instead of list
+        # because we want unique values
+        new_urls_set = set()
+        # infinte loop protection
+        if max_depth:
+            # make sure we just hit the url once
+            gen = (url for url in urls_set if url not in self.website_content)
+            for url in gen:
+                # get response from url
+                response = self.get(url)
+                # set url info
+                self.set(url, response)
+                # get all links inside the response
+                links_from_response = self.get_links_from_response(response)
+                # put new_urls_set and links_from_response together
+                new_urls_set = new_urls_set.union(links_from_response)
+            # recursion call (making sure max_depth gets decremented)
+            self.perform_crawling(new_urls_set, max_depth-1)
+
+    def get_links_from_response(response):
         pass
 
     def set(self, current_url, response):
